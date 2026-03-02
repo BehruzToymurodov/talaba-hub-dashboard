@@ -13,9 +13,10 @@ export default defineConfig({
   server: {
     proxy: {
       "/api": {
-        target: "https://talaba-hub-backend-1013a4d5cf14.herokuapp.com",
+        target: "https://api.talabahub.uz",
         changeOrigin: true,
-        secure: false
+        secure: false,
+        rewrite: path => path.replace(/^\/api/, "")
       }
     }
   }

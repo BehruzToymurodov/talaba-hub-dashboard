@@ -7,7 +7,7 @@ export const API_BASE_URL =
 	import.meta.env.VITE_API_BASE_URL ??
 	(import.meta.env.DEV
 		? '/api'
-		: 'https://talaba-hub-backend-1013a4d5cf14.herokuapp.com/api')
+		: 'https://api.talabahub.uz')
 
 export const baseClient = axios.create({
 	baseURL: API_BASE_URL,
