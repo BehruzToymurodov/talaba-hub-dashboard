@@ -8,7 +8,6 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-import type { Category } from "@/types";
 import { z } from "zod";
 
 type CategoryFormValues = z.infer<typeof categorySchema>;
@@ -26,7 +25,6 @@ export const CategoryForm: FC<CategoryFormProps> = ({ defaultValues, onSubmit, i
       name: "",
       description: "",
       icon: "",
-      attachmentId: "",
       active: true,
       ...defaultValues
     }
@@ -45,18 +43,12 @@ export const CategoryForm: FC<CategoryFormProps> = ({ defaultValues, onSubmit, i
         <Label htmlFor="description">Description</Label>
         <Textarea id="description" rows={4} {...form.register("description")} />
       </div>
-      <div className="grid gap-4 md:grid-cols-2">
-        <div className="space-y-2">
-          <Label htmlFor="icon">Icon</Label>
-          <Input id="icon" placeholder="icon-name" {...form.register("icon")} />
-          {form.formState.errors.icon ? (
-            <p className="text-xs text-destructive">{form.formState.errors.icon.message}</p>
-          ) : null}
-        </div>
-        <div className="space-y-2">
-          <Label htmlFor="attachmentId">Attachment ID</Label>
-          <Input id="attachmentId" {...form.register("attachmentId")} />
-        </div>
+      <div className="space-y-2">
+        <Label htmlFor="icon">Icon</Label>
+        <Input id="icon" placeholder="icon-name" {...form.register("icon")} />
+        {form.formState.errors.icon ? (
+          <p className="text-xs text-destructive">{form.formState.errors.icon.message}</p>
+        ) : null}
       </div>
       <div className="flex items-center justify-between rounded-md border p-3">
         <div>

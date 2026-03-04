@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
+import { AttachmentField } from "@/components/forms/AttachmentField";
 
 type CompanyFormValues = z.infer<typeof companySchema>;
 
@@ -43,10 +44,12 @@ export const CompanyForm: FC<CompanyFormProps> = ({ defaultValues, onSubmit, isS
         <Label htmlFor="description">Description</Label>
         <Textarea id="description" rows={4} {...form.register("description")} />
       </div>
-      <div className="space-y-2">
-        <Label htmlFor="logoAttachmentId">Logo Attachment ID</Label>
-        <Input id="logoAttachmentId" {...form.register("logoAttachmentId")} />
-      </div>
+      <AttachmentField
+        label="Logo Attachment"
+        value={form.watch("logoAttachmentId")}
+        onChange={(value) => form.setValue("logoAttachmentId", value)}
+        helperText="Upload a logo to generate the attachment ID."
+      />
       <div className="flex items-center justify-between rounded-md border p-3">
         <div>
           <p className="text-sm font-medium">Active</p>

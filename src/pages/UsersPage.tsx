@@ -11,8 +11,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { UserDetailsDialog } from "@/components/modals/UserDetailsDialog";
-import { formatDate } from "@/lib/utils/formatters";
-import { useUpdateUserEnabled, useUsers } from "@/lib/api/hooks";
+import { UserEditDialog } from "@/components/modals/UserEditDialog";
+import { formatDateNumeric } from "@/lib/utils/formatters";
+import { useUpdateUser, useUpdateUserEnabled, useUsers } from "@/lib/api/hooks";
 import type { User } from "@/types";
 
 export default function UsersPage() {
@@ -21,6 +22,7 @@ export default function UsersPage() {
   const [enabled, setEnabled] = useState<"all" | "true" | "false">("all");
   const [page, setPage] = useState(1);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
+  const [editingUser, setEditingUser] = useState<User | null>(null);
 
   const { data, isLoading } = useUsers({
     search,
@@ -29,12 +31,18 @@ export default function UsersPage() {
   });
 
   const updateEnabled = useUpdateUserEnabled();
+  const updateUser = useUpdateUser();
 
   const columns = useMemo<ColumnDef<User>[]>(
     () => [
-      { accessorKey: "firstName", header: "Ismi" },
-      { accessorKey: "lastName", header: "Familyasi" },
       { accessorKey: "email", header: "Email" },
+      {
+        accessorKey: "role",
+        header: "Role",
+        cell: ({ row }) => (
+          <Badge variant="secondary">{row.original.role}</Badge>
+        )
+      },
       {
         accessorKey: "studentStatusVerified",
         header: "Verified",
@@ -56,12 +64,12 @@ export default function UsersPage() {
       {
         accessorKey: "createdDate",
         header: "Created",
-        cell: ({ row }) => formatDate(row.original.createdDate)
+        cell: ({ row }) => formatDateNumeric(row.original.createdDate)
       },
       {
         accessorKey: "verifiedDate",
         header: "Verified Date",
-        cell: ({ row }) => formatDate(row.original.verifiedDate)
+        cell: ({ row }) => formatDateNumeric(row.original.verifiedDate)
       },
       {
         id: "actions",
@@ -74,6 +82,13 @@ export default function UsersPage() {
               onClick={() => setSelectedUser(row.original)}
             >
               View
+            </Button>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => setEditingUser(row.original)}
+            >
+              Edit
             </Button>
             <Button
               size="sm"
@@ -143,6 +158,22 @@ export default function UsersPage() {
           onPageChange={setPage}
         />
         <UserDetailsDialog user={selectedUser} open={!!selectedUser} onClose={() => setSelectedUser(null)} />
+        <UserEditDialog
+          user={editingUser}
+          open={!!editingUser}
+          onClose={() => setEditingUser(null)}
+          isSubmitting={updateUser.isPending}
+          onSubmit={async (values) => {
+            if (!editingUser) return;
+            try {
+              await updateUser.mutateAsync({ id: editingUser.id, payload: values });
+              toast.success("User updated");
+              setEditingUser(null);
+            } catch {
+              toast.error("Failed to update user");
+            }
+          }}
+        />
       </div>
     </RequireRole>
   );

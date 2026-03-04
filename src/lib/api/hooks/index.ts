@@ -5,3 +5,4 @@ export * from "./discounts";
 export * from "./applications";
 export * from "./domains";
 export * from "./attachments";
+export * from "./universities";

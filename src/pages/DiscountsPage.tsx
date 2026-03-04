@@ -3,7 +3,15 @@ import type { ColumnDef } from "@tanstack/react-table";
 import { toast } from "sonner";
 
 import { useAuth } from "@/lib/auth/AuthProvider";
-import { useCategories, useCompanies, useCreateDiscount, useDeleteDiscount, useDiscounts, useUpdateDiscount } from "@/lib/api/hooks";
+import {
+  useCategories,
+  useCompanies,
+  useCreateDiscount,
+  useDeleteDiscount,
+  useDiscount,
+  useDiscounts,
+  useUpdateDiscount
+} from "@/lib/api/hooks";
 import type { Discount } from "@/types";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { DataTable } from "@/components/tables/DataTable";
@@ -30,6 +38,10 @@ export default function DiscountsPage() {
   });
   const { data: categoriesData } = useCategories({ page: 1, pageSize: 50 });
   const { data: companiesData } = useCompanies({ page: 1, pageSize: 50, scope: role === "moderator" ? "mine" : "all" });
+  const { data: discountDetail, isLoading: isDiscountLoading } = useDiscount(
+    activeDiscount?.id,
+    openForm && !!activeDiscount?.id
+  );
 
   const createDiscount = useCreateDiscount();
   const updateDiscount = useUpdateDiscount();
@@ -45,7 +57,11 @@ export default function DiscountsPage() {
       {
         id: "category",
         header: "Category",
-        cell: ({ row }) => row.original.category?.name ?? "-"
+        cell: ({ row }) => {
+          const names = row.original.categories?.map((category) => category.name).filter(Boolean) ?? [];
+          if (names.length) return names.join(", ");
+          return row.original.category?.name ?? "-";
+        }
       },
       {
         id: "expiryDate",
@@ -136,30 +152,36 @@ export default function DiscountsPage() {
       />
 
       <Dialog open={openForm} onOpenChange={setOpenForm}>
-        <DialogContent className="max-w-3xl">
+        <DialogContent className="h-[calc(100vh-96px)] w-full max-w-4xl overflow-hidden">
           <DialogHeader>
             <DialogTitle>{activeDiscount ? "Edit Discount" : "New Discount"}</DialogTitle>
           </DialogHeader>
           <DiscountForm
             defaultValues={
               activeDiscount
-                ? {
-                    title: activeDiscount.title,
-                    description: activeDiscount.description ?? "",
-                    promoCode: activeDiscount.promoCode ?? "",
-                    expiryDate: activeDiscount.expiryDate ? activeDiscount.expiryDate.split("T")[0] : "",
-                    terms: activeDiscount.terms ?? "",
-                    usageSteps: activeDiscount.usageSteps ?? "",
-                    verifiedOnly: activeDiscount.verifiedOnly ?? false,
-                    categoryId: activeDiscount.category?.id ?? "",
-                    brandId: activeDiscount.brand?.id ?? "",
-                    attachmentId: ""
-                  }
+                ? (() => {
+                    const source = discountDetail ?? activeDiscount;
+                    return {
+                      title: source.title,
+                      description: source.description ?? "",
+                      promoCode: source.promoCode ?? "",
+                      expiryDate: source.expiryDate ? source.expiryDate.split("T")[0] : "",
+                      terms: source.terms ?? "",
+                      usageSteps: source.usageSteps ?? "",
+                      verifiedOnly: source.verifiedOnly ?? false,
+                      categoryIds:
+                        source.categories?.map((category) => category.id) ??
+                        source.categoryIds ??
+                        (source.category?.id ? [source.category.id] : []),
+                      brandId: source.brand?.id ?? "",
+                      attachmentId: source.attachmentId ?? ""
+                    };
+                  })()
                 : undefined
             }
             categories={categoriesData?.data ?? []}
             companies={companiesData?.data ?? []}
-            isSubmitting={createDiscount.isPending || updateDiscount.isPending}
+            isSubmitting={createDiscount.isPending || updateDiscount.isPending || isDiscountLoading}
             onSubmit={async (values) => {
               try {
                 if (activeDiscount) {

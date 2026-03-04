@@ -28,7 +28,7 @@ export const discountSchema = z.object({
   terms: z.string().optional().nullable(),
   usageSteps: z.string().optional().nullable(),
   verifiedOnly: z.boolean().default(false),
-  categoryId: z.string().min(1),
+  categoryIds: z.array(z.string()).min(1, "Select at least one category"),
   brandId: z.string().min(1),
   attachmentId: z.string().optional().nullable()
 });
@@ -46,5 +46,10 @@ export const applicationSchema = z.object({
 export const domainSchema = z.object({
   domain: z.string().min(3),
   universityName: z.string().optional().nullable(),
+  active: z.boolean().default(true)
+});
+
+export const universitySchema = z.object({
+  name: z.string().min(2),
   active: z.boolean().default(true)
 });
