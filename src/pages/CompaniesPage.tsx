@@ -117,7 +117,7 @@ export default function CompaniesPage() {
                     name: activeCompany.name,
                     description: activeCompany.description ?? "",
                     active: activeCompany.active ?? true,
-                    logoAttachmentId: ""
+                    logoAttachmentId: activeCompany.logoAttachmentId ?? ""
                   }
                 : undefined
             }

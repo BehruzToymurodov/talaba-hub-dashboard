@@ -48,6 +48,18 @@ export function useDiscounts(params: DiscountsQuery) {
   });
 }
 
+export function useDiscount(id?: string, enabled = true) {
+  return useQuery({
+    queryKey: ["discount", id],
+    queryFn: async () => {
+      if (!id) return null;
+      const { data } = await apiClient.get<Discount>(ENDPOINTS.discounts.detail(id));
+      return data;
+    },
+    enabled: enabled && !!id
+  });
+}
+
 export function useCreateDiscount() {
   const client = useQueryClient();
   return useMutation({
@@ -88,6 +100,9 @@ function normalizeDealPayload(payload: Partial<Discount>) {
       : new Date(payload.expiryDate).toISOString()
     : undefined;
 
+  const categoryId = payload.category?.id ?? (payload as { categoryId?: string }).categoryId;
+  const categoryIds = (payload as { categoryIds?: string[] }).categoryIds ?? (categoryId ? [categoryId] : undefined);
+
   return omitUndefined({
     title: payload.title,
     description: payload.description,
@@ -97,7 +112,8 @@ function normalizeDealPayload(payload: Partial<Discount>) {
     usage_steps: payload.usageSteps,
     verified_only: payload.verifiedOnly ?? false,
     brand_id: payload.brand?.id ?? (payload as { brandId?: string }).brandId,
-    category_id: payload.category?.id ?? (payload as { categoryId?: string }).categoryId,
+    category_id: categoryIds && categoryIds.length === 1 ? categoryIds[0] : undefined,
+    category_ids: categoryIds && categoryIds.length ? categoryIds : undefined,
     attachment_id: (payload as { attachmentId?: string }).attachmentId
   });
 }

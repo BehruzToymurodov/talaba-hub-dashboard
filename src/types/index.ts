@@ -50,8 +50,10 @@ export interface Discount {
   imageUrl?: string | null;
   brand?: BrandListing | null;
   category?: CategorySummary | null;
+  categories?: CategorySummary[] | null;
   brandId?: string | null;
   categoryId?: string | null;
+  categoryIds?: string[] | null;
   attachmentId?: string | null;
   createdAt?: string | null;
   updatedAt?: string | null;
@@ -74,6 +76,14 @@ export interface Domain {
   id: string;
   domain: string;
   universityName?: string | null;
+  active: boolean;
+  createdDate?: string | null;
+  lastModifiedDate?: string | null;
+}
+
+export interface University {
+  id: string;
+  name: string;
   active: boolean;
   createdDate?: string | null;
   lastModifiedDate?: string | null;

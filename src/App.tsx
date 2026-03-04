@@ -1,4 +1,4 @@
-import { Navigate, Route, RouterProvider, createBrowserRouter, createRoutesFromElements } from "react-router-dom";
+import { Navigate, Route, RouterProvider, createHashRouter, createRoutesFromElements } from "react-router-dom";
 
 import AppShell from "@/components/layout/AppShell";
 import LoginPage from "@/pages/LoginPage";
@@ -8,15 +8,15 @@ import UsersPage from "@/pages/UsersPage";
 import CategoriesPage from "@/pages/CategoriesPage";
 import CompaniesPage from "@/pages/CompaniesPage";
 import DiscountsPage from "@/pages/DiscountsPage";
-import AttachmentsPage from "@/pages/AttachmentsPage";
 import ApplicationsPage from "@/pages/applications/ApplicationsPage";
 import ApplicationDetailPage from "@/pages/applications/ApplicationDetailPage";
 import MyApplicationsPage from "@/pages/applications/MyApplicationsPage";
 import ApplyApplicationPage from "@/pages/applications/ApplyApplicationPage";
 import DomainsPage from "@/pages/DomainsPage";
+import UniversitiesPage from "@/pages/UniversitiesPage";
 import SettingsPage from "@/pages/SettingsPage";
 
-const router = createBrowserRouter(
+const router = createHashRouter(
   createRoutesFromElements(
     <>
       <Route path="/" element={<Navigate to="/dashboard" replace />} />
@@ -27,13 +27,13 @@ const router = createBrowserRouter(
         <Route path="/users" element={<UsersPage />} />
         <Route path="/categories" element={<CategoriesPage />} />
         <Route path="/companies" element={<CompaniesPage />} />
-        <Route path="/attachments" element={<AttachmentsPage />} />
         <Route path="/discounts" element={<DiscountsPage />} />
         <Route path="/applications" element={<ApplicationsPage />} />
         <Route path="/applications/my" element={<MyApplicationsPage />} />
         <Route path="/applications/apply" element={<ApplyApplicationPage />} />
         <Route path="/applications/:id" element={<ApplicationDetailPage />} />
         <Route path="/domains" element={<DomainsPage />} />
+        <Route path="/universities" element={<UniversitiesPage />} />
         <Route path="/settings" element={<SettingsPage />} />
       </Route>
       <Route path="*" element={<Navigate to="/dashboard" replace />} />

@@ -1,5 +1,5 @@
 import type { FC } from "react";
-import { useMemo } from "react";
+import { useEffect, useMemo } from "react";
 import { useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -13,6 +13,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Card, CardContent } from "@/components/ui/card";
 import type { Category, Company } from "@/types";
 import { Switch } from "@/components/ui/switch";
+import { AttachmentField } from "@/components/forms/AttachmentField";
 
 type DiscountFormValues = z.infer<typeof discountSchema>;
 
@@ -22,6 +23,19 @@ type DiscountFormProps = {
   companies: Company[];
   onSubmit: (values: DiscountFormValues) => void | Promise<void>;
   isSubmitting?: boolean;
+};
+
+const EMPTY_VALUES: DiscountFormValues = {
+  title: "",
+  description: "",
+  promoCode: "",
+  expiryDate: "",
+  terms: "",
+  usageSteps: "",
+  verifiedOnly: false,
+  categoryIds: [],
+  brandId: "",
+  attachmentId: ""
 };
 
 export const DiscountForm: FC<DiscountFormProps> = ({
@@ -34,19 +48,21 @@ export const DiscountForm: FC<DiscountFormProps> = ({
   const form = useForm<DiscountFormValues>({
     resolver: zodResolver(discountSchema),
     defaultValues: {
-      title: "",
-      description: "",
-      promoCode: "",
-      expiryDate: "",
-      terms: "",
-      usageSteps: "",
-      verifiedOnly: false,
-      categoryId: "",
-      brandId: "",
-      attachmentId: "",
+      ...EMPTY_VALUES,
       ...defaultValues
     }
   });
+
+  useEffect(() => {
+    form.register("categoryIds");
+  }, [form]);
+
+  useEffect(() => {
+    form.reset({
+      ...EMPTY_VALUES,
+      ...defaultValues
+    });
+  }, [defaultValues, form]);
 
   const [title, description, promoCode, expiryDate, verifiedOnly] = useWatch({
     control: form.control,
@@ -63,9 +79,21 @@ export const DiscountForm: FC<DiscountFormProps> = ({
     };
   }, [title, description, promoCode, expiryDate, verifiedOnly]);
 
+  const selectedCategoryIds = form.watch("categoryIds") ?? [];
+
+  const toggleCategory = (id: string) => {
+    const next = selectedCategoryIds.includes(id)
+      ? selectedCategoryIds.filter((item) => item !== id)
+      : [...selectedCategoryIds, id];
+    form.setValue("categoryIds", next, { shouldValidate: true });
+  };
+
   return (
-    <div className="grid gap-8 lg:grid-cols-[2fr,1fr]">
-      <form className="space-y-4" onSubmit={form.handleSubmit(onSubmit)}>
+    <div className="grid h-full min-h-0 gap-8 lg:grid-cols-[2fr,1fr]">
+      <form
+        className="h-full min-h-0 space-y-4 overflow-y-auto overflow-x-visible pr-6 pl-1"
+        onSubmit={form.handleSubmit(onSubmit)}
+      >
         <div className="space-y-2">
           <Label htmlFor="title">Title</Label>
           <Input id="title" {...form.register("title")} />
@@ -87,37 +115,42 @@ export const DiscountForm: FC<DiscountFormProps> = ({
             <Input id="expiryDate" type="date" {...form.register("expiryDate")} />
           </div>
         </div>
-        <div className="grid gap-4 md:grid-cols-2">
-          <div className="space-y-2">
-            <Label>Category</Label>
-            <Select value={form.watch("categoryId")} onValueChange={(value) => form.setValue("categoryId", value)}>
-              <SelectTrigger>
-                <SelectValue placeholder="Select category" />
-              </SelectTrigger>
-              <SelectContent>
-                {categories.map((category) => (
-                  <SelectItem key={category.id} value={category.id}>
-                    {category.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+        <div className="space-y-2">
+          <Label>Categories</Label>
+          <div className="grid gap-2 md:grid-cols-2">
+            {categories.map((category) => (
+              <label
+                key={category.id}
+                className="flex items-center gap-2 rounded-md border px-3 py-2 text-sm"
+              >
+                <input
+                  type="checkbox"
+                  className="h-4 w-4 rounded border-muted-foreground"
+                  checked={selectedCategoryIds.includes(category.id)}
+                  onChange={() => toggleCategory(category.id)}
+                />
+                <span className="truncate">{category.name}</span>
+              </label>
+            ))}
           </div>
-          <div className="space-y-2">
-            <Label>Brand</Label>
-            <Select value={form.watch("brandId")} onValueChange={(value) => form.setValue("brandId", value)}>
-              <SelectTrigger>
-                <SelectValue placeholder="Select brand" />
-              </SelectTrigger>
-              <SelectContent>
-                {companies.map((company) => (
-                  <SelectItem key={company.id} value={company.id}>
-                    {company.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
+          {form.formState.errors.categoryIds ? (
+            <p className="text-xs text-destructive">{form.formState.errors.categoryIds.message}</p>
+          ) : null}
+        </div>
+        <div className="space-y-2">
+          <Label>Brand</Label>
+          <Select value={form.watch("brandId")} onValueChange={(value) => form.setValue("brandId", value)}>
+            <SelectTrigger>
+              <SelectValue placeholder="Select brand" />
+            </SelectTrigger>
+            <SelectContent>
+              {companies.map((company) => (
+                <SelectItem key={company.id} value={company.id}>
+                  {company.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
         <div className="space-y-2">
           <Label htmlFor="terms">Terms</Label>
@@ -127,10 +160,12 @@ export const DiscountForm: FC<DiscountFormProps> = ({
           <Label htmlFor="usageSteps">Usage Steps</Label>
           <Textarea id="usageSteps" rows={3} {...form.register("usageSteps")} />
         </div>
-        <div className="space-y-2">
-          <Label htmlFor="attachmentId">Attachment ID</Label>
-          <Input id="attachmentId" {...form.register("attachmentId")} />
-        </div>
+        <AttachmentField
+          label="Deal Image"
+          value={form.watch("attachmentId")}
+          onChange={(value) => form.setValue("attachmentId", value)}
+          helperText="Upload a promo image to generate the attachment ID."
+        />
         <div className="flex items-center justify-between rounded-md border p-3">
           <div>
             <p className="text-sm font-medium">Verified Only</p>
@@ -143,7 +178,7 @@ export const DiscountForm: FC<DiscountFormProps> = ({
         </Button>
       </form>
 
-      <Card>
+      <Card className="h-fit self-start">
         <CardContent className="space-y-4 p-5">
           <div className="text-xs uppercase text-muted-foreground">Preview</div>
           <div>

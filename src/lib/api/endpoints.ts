@@ -47,6 +47,13 @@ export const ENDPOINTS = {
     delete: (id: string) => `/v1/management/domains/${id}`,
     getById: (id: string) => `/v1/management/domains/${id}`
   },
+  universities: {
+    list: "/v1/management/universities",
+    create: "/v1/management/universities",
+    update: (id: string) => `/v1/management/universities/${id}`,
+    delete: (id: string) => `/v1/management/universities/${id}`,
+    getById: (id: string) => `/v1/management/universities/${id}`
+  },
   attachments: {
     upload: "/v1/attachments",
     download: "/v1/attachments/get"
