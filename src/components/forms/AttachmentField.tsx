@@ -102,6 +102,9 @@ export function AttachmentField({
             <p className="text-sm font-medium">{selectedAttachment.fileName}</p>
             <p className="text-xs text-muted-foreground">ID: {selectedAttachment.id}</p>
           </div>
+          <Button type="button" variant="outline" size="sm" onClick={() => onChange("")}>
+            Clear
+          </Button>
           {selectedAttachment.url && selectedAttachment.mimeType.startsWith("image/") ? (
             <img
               src={selectedAttachment.url}
@@ -111,10 +114,13 @@ export function AttachmentField({
           ) : null}
         </div>
       ) : value ? (
-        <div className="rounded-md border p-3 text-xs text-muted-foreground">Selected ID: {value}</div>
+        <div className="flex items-center gap-3 rounded-md border p-3 text-xs text-muted-foreground">
+          <div className="flex-1">Selected ID: {value}</div>
+          <Button type="button" variant="outline" size="sm" onClick={() => onChange("")}>
+            Clear
+          </Button>
+        </div>
       ) : null}
-
-      
     </div>
   );
 }

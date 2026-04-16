@@ -57,11 +57,7 @@ export default function DiscountsPage() {
       {
         id: "category",
         header: "Category",
-        cell: ({ row }) => {
-          const names = row.original.categories?.map((category) => category.name).filter(Boolean) ?? [];
-          if (names.length) return names.join(", ");
-          return row.original.category?.name ?? "-";
-        }
+        cell: ({ row }) => row.original.category?.name ?? row.original.categories?.[0]?.name ?? "-"
       },
       {
         id: "expiryDate",
@@ -169,10 +165,12 @@ export default function DiscountsPage() {
                       terms: source.terms ?? "",
                       usageSteps: source.usageSteps ?? "",
                       verifiedOnly: source.verifiedOnly ?? false,
-                      categoryIds:
-                        source.categories?.map((category) => category.id) ??
-                        source.categoryIds ??
-                        (source.category?.id ? [source.category.id] : []),
+                      categoryId:
+                        source.category?.id ??
+                        source.categoryId ??
+                        source.categories?.[0]?.id ??
+                        source.categoryIds?.[0] ??
+                        "",
                       brandId: source.brand?.id ?? "",
                       attachmentId: source.attachmentId ?? ""
                     };

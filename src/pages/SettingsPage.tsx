@@ -1,3 +1,6 @@
+import { useQuery } from "@tanstack/react-query";
+
+import { getMeRequest } from "@/lib/api/auth";
 import { useAuth } from "@/lib/auth/AuthProvider";
 import { Card, CardContent } from "@/components/ui/card";
 import { PageHeader } from "@/components/layout/PageHeader";
@@ -6,6 +9,11 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 export default function SettingsPage() {
   const { user } = useAuth();
+  const { data: profile } = useQuery({
+    queryKey: ["account", "me"],
+    queryFn: getMeRequest,
+    enabled: !!user
+  });
 
   return (
     <div className="space-y-6">
@@ -20,7 +28,23 @@ export default function SettingsPage() {
             <CardContent className="space-y-4 p-6">
               <div>
                 <p className="text-sm text-muted-foreground">Account</p>
-                <p className="font-medium">{user?.email}</p>
+                <p className="font-medium">{profile?.email ?? user?.email}</p>
+              </div>
+              <div>
+                <p className="text-sm text-muted-foreground">Full Name</p>
+                <p className="font-medium">
+                  {profile ? `${profile.firstName} ${profile.lastName}` : user?.fullName ?? "-"}
+                </p>
+              </div>
+              <div>
+                <p className="text-sm text-muted-foreground">Role</p>
+                <p className="font-medium">{profile?.role ?? user?.role ?? "-"}</p>
+              </div>
+              <div>
+                <p className="text-sm text-muted-foreground">Student Verification</p>
+                <p className="font-medium">
+                  {profile?.studentStatusVerified ?? user?.isStudentStatusVerified ? "Verified" : "Not verified"}
+                </p>
               </div>
             </CardContent>
           </Card>

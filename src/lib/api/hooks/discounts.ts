@@ -2,7 +2,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import apiClient from "@/lib/api/axios";
 import { ENDPOINTS } from "@/lib/api/endpoints";
-import type { Discount, PageableResponse } from "@/types";
+import type { DealMapItem, Discount, PageableResponse } from "@/types";
 import { mapPageable } from "@/lib/api/adapters";
 import { omitUndefined } from "@/lib/api/serializers";
 
@@ -60,6 +60,44 @@ export function useDiscount(id?: string, enabled = true) {
   });
 }
 
+export function usePublicDiscount(id?: string, enabled = true) {
+  return useQuery({
+    queryKey: ["discount", "public", id],
+    queryFn: async () => {
+      if (!id) return null;
+      const { data } = await apiClient.get<Discount>(ENDPOINTS.discounts.publicDetail(id));
+      return data;
+    },
+    enabled: enabled && !!id
+  });
+}
+
+export function useDealsMap(params?: {
+  brandId?: string;
+  categoryId?: string;
+  minLat?: number;
+  maxLat?: number;
+  minLng?: number;
+  maxLng?: number;
+}) {
+  return useQuery({
+    queryKey: ["discounts", "map", params],
+    queryFn: async () => {
+      const { data } = await apiClient.get<DealMapItem[]>(ENDPOINTS.discounts.map, {
+        params: {
+          brand_id: params?.brandId,
+          category_id: params?.categoryId,
+          min_lat: params?.minLat,
+          max_lat: params?.maxLat,
+          min_lng: params?.minLng,
+          max_lng: params?.maxLng
+        }
+      });
+      return data;
+    }
+  });
+}
+
 export function useCreateDiscount() {
   const client = useQueryClient();
   return useMutation({
@@ -100,8 +138,10 @@ function normalizeDealPayload(payload: Partial<Discount>) {
       : new Date(payload.expiryDate).toISOString()
     : undefined;
 
-  const categoryId = payload.category?.id ?? (payload as { categoryId?: string }).categoryId;
-  const categoryIds = (payload as { categoryIds?: string[] }).categoryIds ?? (categoryId ? [categoryId] : undefined);
+  const categoryId =
+    payload.category?.id ??
+    (payload as { categoryId?: string }).categoryId ??
+    (payload as { categoryIds?: string[] }).categoryIds?.[0];
 
   return omitUndefined({
     title: payload.title,
@@ -112,8 +152,7 @@ function normalizeDealPayload(payload: Partial<Discount>) {
     usage_steps: payload.usageSteps,
     verified_only: payload.verifiedOnly ?? false,
     brand_id: payload.brand?.id ?? (payload as { brandId?: string }).brandId,
-    category_id: categoryIds && categoryIds.length === 1 ? categoryIds[0] : undefined,
-    category_ids: categoryIds && categoryIds.length ? categoryIds : undefined,
+    category_id: categoryId,
     attachment_id: (payload as { attachmentId?: string }).attachmentId
   });
 }

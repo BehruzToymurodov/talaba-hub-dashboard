@@ -4,6 +4,9 @@ export const ENDPOINTS = {
     register: "/v1/auth/register",
     verifyEmail: "/v1/auth/verify"
   },
+  account: {
+    me: "/v1/account/me"
+  },
   users: {
     list: "/v1/management/users",
     create: "/v1/management/users",
@@ -12,6 +15,7 @@ export const ENDPOINTS = {
   categories: {
     list: "/v1/management/categories",
     create: "/v1/management/categories",
+    detail: (id: string) => `/v1/management/categories/${id}`,
     update: (id: string) => `/v1/management/categories/${id}`,
     delete: (id: string) => `/v1/management/categories/${id}`,
     publicList: "/v1/categories",
@@ -24,6 +28,15 @@ export const ENDPOINTS = {
     delete: (id: string) => `/v1/management/brands/${id}`,
     getById: (id: string) => `/v1/management/brands/${id}`
   },
+  branches: {
+    list: (brandId: string) => `/v1/management/brands/${brandId}/branches`,
+    create: (brandId: string) => `/v1/management/brands/${brandId}/branches`,
+    detail: (brandId: string, branchId: string) => `/v1/management/brands/${brandId}/branches/${branchId}`,
+    update: (brandId: string, branchId: string) => `/v1/management/brands/${brandId}/branches/${branchId}`,
+    delete: (brandId: string, branchId: string) => `/v1/management/brands/${brandId}/branches/${branchId}`,
+    publicList: (brandId: string) => `/v1/brands/${brandId}/branches`,
+    publicDetail: (brandId: string, branchId: string) => `/v1/brands/${brandId}/branches/${branchId}`
+  },
   discounts: {
     list: "/v1/management/deals",
     create: "/v1/management/deals",
@@ -31,7 +44,8 @@ export const ENDPOINTS = {
     delete: (id: string) => `/v1/management/deals/${id}`,
     detail: (id: string) => `/v1/management/deals/${id}`,
     publicList: "/v1/deals",
-    publicDetail: (id: string) => `/v1/deals/${id}`
+    publicDetail: (id: string) => `/v1/deals/${id}`,
+    map: "/v1/deals/map"
   },
   applications: {
     myList: "/v1/student/applications/my",
@@ -52,7 +66,8 @@ export const ENDPOINTS = {
     create: "/v1/management/universities",
     update: (id: string) => `/v1/management/universities/${id}`,
     delete: (id: string) => `/v1/management/universities/${id}`,
-    getById: (id: string) => `/v1/management/universities/${id}`
+    getById: (id: string) => `/v1/management/universities/${id}`,
+    publicList: "/v1/universities"
   },
   attachments: {
     upload: "/v1/attachments",

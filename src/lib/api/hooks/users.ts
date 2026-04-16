@@ -15,13 +15,21 @@ export type UsersQuery = {
 
 type UserResponse = {
   id: string;
-  first_name: string;
-  last_name: string;
+  firstName?: string;
+  lastName?: string;
   email: string;
   role: ApiRole;
-  student_status_verified: boolean;
+  studentStatusVerified?: boolean;
   enabled: boolean;
-  created_date: string;
+  brandId?: string | null;
+  createdDate?: string;
+  lastModifiedDate?: string | null;
+  verifiedDate?: string | null;
+  first_name?: string;
+  last_name?: string;
+  student_status_verified?: boolean;
+  brand_id?: string | null;
+  created_date?: string;
   last_modified_date?: string | null;
   verified_date?: string | null;
 };
@@ -29,15 +37,16 @@ type UserResponse = {
 function mapUser(user: UserResponse): User {
   return {
     id: user.id,
-    firstName: user.first_name,
-    lastName: user.last_name,
+    firstName: user.firstName ?? user.first_name ?? "",
+    lastName: user.lastName ?? user.last_name ?? "",
     email: user.email,
     role: user.role,
-    studentStatusVerified: user.student_status_verified,
+    brandId: user.brandId ?? user.brand_id ?? null,
+    studentStatusVerified: user.studentStatusVerified ?? user.student_status_verified ?? false,
     enabled: user.enabled,
-    createdDate: user.created_date,
-    lastModifiedDate: user.last_modified_date ?? null,
-    verifiedDate: user.verified_date ?? null
+    createdDate: user.createdDate ?? user.created_date ?? "",
+    lastModifiedDate: user.lastModifiedDate ?? user.last_modified_date ?? null,
+    verifiedDate: user.verifiedDate ?? user.verified_date ?? null
   };
 }
 
@@ -67,16 +76,45 @@ export function useUpdateUserEnabled() {
   return useMutation({
     mutationFn: async ({ user, enabled, brandId }: { user: User; enabled: boolean; brandId?: string | null }) => {
       const payload = omitUndefined({
-        first_name: user.firstName,
-        last_name: user.lastName,
+        firstName: user.firstName,
+        lastName: user.lastName,
         email: user.email,
         role: user.role,
-        // TODO: Provide brandId for moderator users if required by backend.
-        brand_id: brandId ?? undefined,
+        brandId: brandId ?? user.brandId ?? undefined,
         enabled
       });
-      const { data } = await apiClient.put<User>(ENDPOINTS.users.update(user.id), payload);
-      return data;
+      const { data } = await apiClient.put<UserResponse>(ENDPOINTS.users.update(user.id), payload);
+      return mapUser(data);
+    },
+    onSuccess: () => {
+      client.invalidateQueries({ queryKey: ["users"] });
+    }
+  });
+}
+
+export function useCreateUser() {
+  const client = useQueryClient();
+  return useMutation({
+    mutationFn: async (payload: {
+      firstName: string;
+      lastName: string;
+      email: string;
+      role: ApiRole;
+      password?: string;
+      enabled?: boolean;
+      brandId?: string | null;
+    }) => {
+      const body = omitUndefined({
+        firstName: payload.firstName,
+        lastName: payload.lastName,
+        email: payload.email,
+        role: payload.role,
+        password: payload.password,
+        brandId: payload.brandId ?? undefined,
+        enabled: payload.enabled
+      });
+      const { data } = await apiClient.post<UserResponse>(ENDPOINTS.users.create, body);
+      return mapUser(data);
     },
     onSuccess: () => {
       client.invalidateQueries({ queryKey: ["users"] });
@@ -96,15 +134,15 @@ export function useUpdateUser() {
       brandId?: string | null;
     } }) => {
       const body = omitUndefined({
-        first_name: payload.firstName,
-        last_name: payload.lastName,
+        firstName: payload.firstName,
+        lastName: payload.lastName,
         email: payload.email,
         role: payload.role,
-        brand_id: payload.brandId ?? undefined,
+        brandId: payload.brandId ?? undefined,
         enabled: payload.enabled
       });
-      const { data } = await apiClient.put<User>(ENDPOINTS.users.update(id), body);
-      return data;
+      const { data } = await apiClient.put<UserResponse>(ENDPOINTS.users.update(id), body);
+      return mapUser(data);
     },
     onSuccess: () => {
       client.invalidateQueries({ queryKey: ["users"] });

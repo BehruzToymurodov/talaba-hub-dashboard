@@ -4,7 +4,7 @@ import apiClient from "@/lib/api/axios";
 import { ENDPOINTS } from "@/lib/api/endpoints";
 import type { Category, PageableResponse } from "@/types";
 import { mapPageable } from "@/lib/api/adapters";
-import { omitUndefined } from "@/lib/api/serializers";
+import { normalizeOptionalString, omitUndefined } from "@/lib/api/serializers";
 
 export type CategoriesQuery = {
   search?: string;
@@ -30,6 +30,18 @@ export function useCategories(params: CategoriesQuery) {
   });
 }
 
+export function useCategory(id?: string) {
+  return useQuery({
+    queryKey: ["categories", "detail", id],
+    queryFn: async () => {
+      if (!id) return null;
+      const { data } = await apiClient.get<Category>(ENDPOINTS.categories.detail(id));
+      return data;
+    },
+    enabled: !!id
+  });
+}
+
 export function useCreateCategory() {
   const client = useQueryClient();
   return useMutation({
@@ -39,7 +51,8 @@ export function useCreateCategory() {
         description: payload.description,
         icon: payload.icon,
         active: payload.active,
-        attachment_id: payload.attachmentId
+        attachment_id: normalizeOptionalString(payload.attachmentId),
+        parent_id: normalizeOptionalString(payload.parentId)
       });
       const { data } = await apiClient.post<Category>(ENDPOINTS.categories.create, body);
       return data;
@@ -57,7 +70,8 @@ export function useUpdateCategory() {
         description: payload.description,
         icon: payload.icon,
         active: payload.active,
-        attachment_id: payload.attachmentId
+        attachment_id: normalizeOptionalString(payload.attachmentId),
+        parent_id: normalizeOptionalString(payload.parentId)
       });
       const { data } = await apiClient.put<Category>(ENDPOINTS.categories.update(id), body);
       return data;

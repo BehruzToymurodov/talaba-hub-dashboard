@@ -9,6 +9,7 @@ export interface User {
   lastName: string;
   email: string;
   role: ApiRole;
+  brandId?: string | null;
   studentStatusVerified: boolean;
   enabled: boolean;
   createdDate: string;
@@ -22,9 +23,14 @@ export interface Category {
   description?: string | null;
   icon?: string | null;
   active?: boolean;
+  createdDate?: string | null;
+  lastModifiedDate?: string | null;
   attachment?: BasicAttachment | null;
+  attachmentUrl?: string | null;
   attachmentId?: string | null;
   activeDealsCount?: number;
+  parentId?: string | null;
+  parentName?: string | null;
 }
 
 export interface Company {
@@ -36,6 +42,17 @@ export interface Company {
   active?: boolean;
   createdDate?: string | null;
   lastModifiedDate?: string | null;
+}
+
+export interface Branch {
+  id: string;
+  name: string;
+  address?: string | null;
+  latitude: number;
+  longitude: number;
+  phone?: string | null;
+  workingHours?: string | null;
+  active: boolean;
 }
 
 export interface Discount {
@@ -68,6 +85,7 @@ export interface Application {
   studyEndDate?: string | null;
   attachments?: string[] | null;
   status: ApplicationStatus;
+  message?: string | null;
   rejectionReason?: string | null;
   createdDate?: string | null;
 }
@@ -122,6 +140,20 @@ export interface BasicAttachment {
   fileName: string;
   mimeType: string;
   url: string;
+}
+
+export interface DealMapItem {
+  dealId: string;
+  title: string;
+  discountValue?: string | null;
+  branchId: string;
+  branchName: string;
+  branchAddress?: string | null;
+  latitude: number;
+  longitude: number;
+  brandId: string;
+  brandName: string;
+  brandLogoUrl?: string | null;
 }
 
 export interface PaginatedResponse<T> {
