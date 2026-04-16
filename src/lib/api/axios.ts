@@ -5,7 +5,7 @@ import { clearAccessToken, getAccessToken } from '@/lib/auth/tokenStore'
 
 export const API_BASE_URL =
 	import.meta.env.VITE_API_BASE_URL ??
-	(import.meta.env.DEV ? '/api' : 'https://api.talabahub.uz/api')
+	'https://api.talabahub.uz/api'
 
 export const baseClient = axios.create({
 	baseURL: API_BASE_URL,

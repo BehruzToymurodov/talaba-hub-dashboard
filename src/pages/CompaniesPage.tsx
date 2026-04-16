@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { Link } from "react-router-dom";
 import type { ColumnDef } from "@tanstack/react-table";
 import { toast } from "sonner";
 
@@ -30,7 +31,11 @@ export default function CompaniesPage() {
   const columns = useMemo<ColumnDef<Company>[]>(
     () => [
       { accessorKey: "name", header: "Name" },
-      { accessorKey: "website", header: "Website" },
+      {
+        accessorKey: "description",
+        header: "Description",
+        cell: ({ row }) => row.original.description || "-"
+      },
       {
         accessorKey: "active",
         header: "Status",
@@ -44,7 +49,10 @@ export default function CompaniesPage() {
         id: "actions",
         header: "Actions",
         cell: ({ row }) => (
-          <div className="flex gap-2">
+          <div className="flex flex-wrap gap-2">
+            <Button asChild size="sm" variant="secondary">
+              <Link to={`/companies/${row.original.id}/branches`}>Branches</Link>
+            </Button>
             <Button
               size="sm"
               variant="outline"

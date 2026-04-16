@@ -2,11 +2,14 @@ import { Navigate, Route, RouterProvider, createHashRouter, createRoutesFromElem
 
 import AppShell from "@/components/layout/AppShell";
 import LoginPage from "@/pages/LoginPage";
+import RegisterPage from "@/pages/RegisterPage";
 import ForbiddenPage from "@/pages/ForbiddenPage";
+import VerifyEmailPage from "@/pages/VerifyEmailPage";
 import DashboardPage from "@/pages/DashboardPage";
 import UsersPage from "@/pages/UsersPage";
 import CategoriesPage from "@/pages/CategoriesPage";
 import CompaniesPage from "@/pages/CompaniesPage";
+import CompanyBranchesPage from "@/pages/companies/CompanyBranchesPage";
 import DiscountsPage from "@/pages/DiscountsPage";
 import ApplicationsPage from "@/pages/applications/ApplicationsPage";
 import ApplicationDetailPage from "@/pages/applications/ApplicationDetailPage";
@@ -21,12 +24,15 @@ const router = createHashRouter(
     <>
       <Route path="/" element={<Navigate to="/dashboard" replace />} />
       <Route path="/login" element={<LoginPage />} />
+      <Route path="/register" element={<RegisterPage />} />
+      <Route path="/verify-email" element={<VerifyEmailPage />} />
       <Route path="/403" element={<ForbiddenPage />} />
       <Route element={<AppShell />}>
         <Route path="/dashboard" element={<DashboardPage />} />
         <Route path="/users" element={<UsersPage />} />
         <Route path="/categories" element={<CategoriesPage />} />
         <Route path="/companies" element={<CompaniesPage />} />
+        <Route path="/companies/:companyId/branches" element={<CompanyBranchesPage />} />
         <Route path="/discounts" element={<DiscountsPage />} />
         <Route path="/applications" element={<ApplicationsPage />} />
         <Route path="/applications/my" element={<MyApplicationsPage />} />
@@ -48,5 +54,13 @@ const router = createHashRouter(
 );
 
 export default function App() {
-  return <RouterProvider router={router} />;
+  return (
+    <RouterProvider
+      router={router}
+      future={{
+        v7_startTransition: true,
+        v7_relativeSplatPath: true
+      }}
+    />
+  );
 }

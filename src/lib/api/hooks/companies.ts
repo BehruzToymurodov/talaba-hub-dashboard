@@ -31,6 +31,18 @@ export function useCompanies(params: CompaniesQuery) {
   });
 }
 
+export function useCompany(id?: string) {
+  return useQuery({
+    queryKey: ["companies", "detail", id],
+    queryFn: async () => {
+      if (!id) return null;
+      const { data } = await apiClient.get<Company>(ENDPOINTS.brands.getById(id));
+      return data;
+    },
+    enabled: !!id
+  });
+}
+
 export function useCreateCompany() {
   const client = useQueryClient();
   return useMutation({
@@ -38,7 +50,7 @@ export function useCreateCompany() {
       const body = omitUndefined({
         name: payload.name,
         description: payload.description,
-        logo_attachment_id: payload.logoAttachmentId,
+        logoAttachmentId: payload.logoAttachmentId,
         active: payload.active
       });
       const { data } = await apiClient.post<Company>(ENDPOINTS.brands.create, body);
@@ -55,7 +67,7 @@ export function useUpdateCompany() {
       const body = omitUndefined({
         name: payload.name,
         description: payload.description,
-        logo_attachment_id: payload.logoAttachmentId,
+        logoAttachmentId: payload.logoAttachmentId,
         active: payload.active
       });
       const { data } = await apiClient.put<Company>(ENDPOINTS.brands.update(id), body);

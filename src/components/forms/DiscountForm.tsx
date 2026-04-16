@@ -33,7 +33,7 @@ const EMPTY_VALUES: DiscountFormValues = {
   terms: "",
   usageSteps: "",
   verifiedOnly: false,
-  categoryIds: [],
+  categoryId: "",
   brandId: "",
   attachmentId: ""
 };
@@ -52,10 +52,6 @@ export const DiscountForm: FC<DiscountFormProps> = ({
       ...defaultValues
     }
   });
-
-  useEffect(() => {
-    form.register("categoryIds");
-  }, [form]);
 
   useEffect(() => {
     form.reset({
@@ -78,15 +74,6 @@ export const DiscountForm: FC<DiscountFormProps> = ({
       expiry: expiryDate || "No expiry"
     };
   }, [title, description, promoCode, expiryDate, verifiedOnly]);
-
-  const selectedCategoryIds = form.watch("categoryIds") ?? [];
-
-  const toggleCategory = (id: string) => {
-    const next = selectedCategoryIds.includes(id)
-      ? selectedCategoryIds.filter((item) => item !== id)
-      : [...selectedCategoryIds, id];
-    form.setValue("categoryIds", next, { shouldValidate: true });
-  };
 
   return (
     <div className="grid h-full min-h-0 gap-8 lg:grid-cols-[2fr,1fr]">
@@ -116,25 +103,21 @@ export const DiscountForm: FC<DiscountFormProps> = ({
           </div>
         </div>
         <div className="space-y-2">
-          <Label>Categories</Label>
-          <div className="grid gap-2 md:grid-cols-2">
-            {categories.map((category) => (
-              <label
-                key={category.id}
-                className="flex items-center gap-2 rounded-md border px-3 py-2 text-sm"
-              >
-                <input
-                  type="checkbox"
-                  className="h-4 w-4 rounded border-muted-foreground"
-                  checked={selectedCategoryIds.includes(category.id)}
-                  onChange={() => toggleCategory(category.id)}
-                />
-                <span className="truncate">{category.name}</span>
-              </label>
-            ))}
-          </div>
-          {form.formState.errors.categoryIds ? (
-            <p className="text-xs text-destructive">{form.formState.errors.categoryIds.message}</p>
+          <Label>Category</Label>
+          <Select value={form.watch("categoryId")} onValueChange={(value) => form.setValue("categoryId", value, { shouldValidate: true })}>
+            <SelectTrigger>
+              <SelectValue placeholder="Select category" />
+            </SelectTrigger>
+            <SelectContent>
+              {categories.map((category) => (
+                <SelectItem key={category.id} value={category.id}>
+                  {category.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          {form.formState.errors.categoryId ? (
+            <p className="text-xs text-destructive">{form.formState.errors.categoryId.message}</p>
           ) : null}
         </div>
         <div className="space-y-2">

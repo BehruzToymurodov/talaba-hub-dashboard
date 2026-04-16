@@ -7,6 +7,7 @@ import { PageHeader } from "@/components/layout/PageHeader";
 import { DataTable } from "@/components/tables/DataTable";
 import { DataTablePagination } from "@/components/tables/DataTablePagination";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { ConfirmDialog } from "@/components/modals/ConfirmDialog";
 import { CategoryForm } from "@/components/forms/CategoryForm";
@@ -20,13 +21,61 @@ export default function CategoriesPage() {
   const [deleteId, setDeleteId] = useState<string | null>(null);
 
   const { data, isLoading } = useCategories({ page, pageSize: 10 });
+  const { data: allCategories } = useCategories({ page: 1, pageSize: 200 });
   const createCategory = useCreateCategory();
   const updateCategory = useUpdateCategory();
   const deleteCategory = useDeleteCategory();
 
+  const topLevelCategories = useMemo(
+    () =>
+      (allCategories?.data ?? []).filter(
+        (category) => !category.parentId && category.id !== activeCategory?.id
+      ),
+    [activeCategory?.id, allCategories?.data]
+  );
+
+  const tableData = useMemo(() => {
+    const categories = data?.data ?? [];
+    return [...categories].sort((left, right) => {
+      if (!!left.parentId !== !!right.parentId) {
+        return left.parentId ? 1 : -1;
+      }
+
+      const leftParent = left.parentName ?? "";
+      const rightParent = right.parentName ?? "";
+      if (leftParent !== rightParent) {
+        return leftParent.localeCompare(rightParent);
+      }
+
+      return left.name.localeCompare(right.name);
+    });
+  }, [data?.data]);
+
   const columns = useMemo<ColumnDef<Category>[]>(
     () => [
-      { accessorKey: "name", header: "Name" },
+      {
+        accessorKey: "name",
+        header: "Name",
+        cell: ({ row }) => (
+          <div className={row.original.parentId ? "pl-4" : ""}>
+            <span className="font-medium">{row.original.name}</span>
+          </div>
+        )
+      },
+      {
+        id: "type",
+        header: "Type",
+        cell: ({ row }) => (
+          <Badge variant={row.original.parentId ? "secondary" : "success"}>
+            {row.original.parentId ? "Child" : "Parent"}
+          </Badge>
+        )
+      },
+      {
+        accessorKey: "parentName",
+        header: "Parent Category",
+        cell: ({ row }) => row.original.parentName ?? "Top-level"
+      },
       { accessorKey: "description", header: "Description" },
       {
         accessorKey: "active",
@@ -74,7 +123,7 @@ export default function CategoriesPage() {
         />
         <DataTable
           columns={columns}
-          data={data?.data ?? []}
+          data={tableData}
           isLoading={isLoading}
           emptyTitle="No categories"
           emptyDescription="Create your first category to organize discounts."
@@ -100,13 +149,15 @@ export default function CategoriesPage() {
                 activeCategory
                   ? {
                       name: activeCategory.name,
-                      description: activeCategory.description ?? "",
-                      icon: activeCategory.icon ?? "",
-                      active: activeCategory.active ?? true,
-                      attachmentId: activeCategory.attachment?.id ?? ""
-                    }
-                  : undefined
+                    description: activeCategory.description ?? "",
+                    icon: activeCategory.icon ?? "",
+                    active: activeCategory.active ?? true,
+                    attachmentId: activeCategory.attachment?.id ?? "",
+                    parentId: activeCategory.parentId ?? undefined
+                  }
+                : undefined
               }
+              parentOptions={topLevelCategories}
               isSubmitting={createCategory.isPending || updateCategory.isPending}
               onSubmit={async (values) => {
                 try {

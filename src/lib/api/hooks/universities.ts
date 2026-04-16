@@ -9,7 +9,7 @@ import { omitUndefined } from "@/lib/api/serializers";
 type UniversityResponse = {
   id: string;
   name: string;
-  active: boolean;
+  active?: boolean;
   createdDate?: string | null;
   lastModifiedDate?: string | null;
   created_date?: string | null;
@@ -19,7 +19,7 @@ type UniversityResponse = {
 const mapUniversity = (item: UniversityResponse): University => ({
   id: item.id,
   name: item.name,
-  active: item.active,
+  active: item.active ?? true,
   createdDate: item.createdDate ?? item.created_date ?? null,
   lastModifiedDate: item.lastModifiedDate ?? item.last_modified_date ?? null
 });
@@ -47,6 +47,38 @@ export function useUniversities(params: UniversitiesQuery) {
       return {
         ...mapped,
         data: mapped.data.map(mapUniversity)
+      };
+    }
+  });
+}
+
+export function useUniversity(id?: string) {
+  return useQuery({
+    queryKey: ["universities", "detail", id],
+    queryFn: async () => {
+      if (!id) return null;
+      const { data } = await apiClient.get<UniversityResponse>(ENDPOINTS.universities.getById(id));
+      return mapUniversity(data);
+    },
+    enabled: !!id
+  });
+}
+
+export function usePublicUniversities(params: Pick<UniversitiesQuery, "search" | "page" | "pageSize">) {
+  return useQuery({
+    queryKey: ["universities", "public", params],
+    queryFn: async () => {
+      const { data } = await apiClient.get<PageableResponse<UniversityResponse>>(ENDPOINTS.universities.publicList, {
+        params: {
+          search: params.search,
+          page: params.page ? params.page - 1 : 0,
+          size: params.pageSize ?? 10
+        }
+      });
+      const mapped = mapPageable(data);
+      return {
+        ...mapped,
+        data: mapped.data.map(({ id, name }) => ({ id, name }))
       };
     }
   });

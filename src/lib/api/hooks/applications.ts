@@ -10,9 +10,11 @@ export type SubmitApplicationPayload = {
   lastName: string;
   middleName?: string | null;
   universityEmail: string;
+  universityName: string;
+  studentIdNumber: string;
   studyStartDate: string;
   studyEndDate: string;
-  attachments?: FileList | null;
+  attachments: FileList;
 };
 
 export type ApplicationsQuery = {
@@ -69,6 +71,8 @@ export function useSubmitApplication() {
           last_name: payload.lastName,
           middle_name: payload.middleName,
           university_email: payload.universityEmail,
+          university_name: payload.universityName,
+          student_id_number: payload.studentIdNumber,
           study_start_date: payload.studyStartDate,
           study_end_date: payload.studyEndDate
         }
@@ -85,10 +89,16 @@ export function useSubmitApplication() {
 export function useReviewApplication() {
   const client = useQueryClient();
   return useMutation({
-    mutationFn: async ({ id, payload }: { id: string; payload: { status: "ACCEPTED" | "REJECTED" | "PENDING"; rejectionReason?: string } }) => {
+    mutationFn: async ({
+      id,
+      payload
+    }: {
+      id: string;
+      payload: { status: "ACCEPTED" | "REJECTED" | "PENDING"; rejectionReason?: string };
+    }) => {
       const body = {
         status: payload.status,
-        rejection_reason: payload.rejectionReason
+        rejectionReason: payload.rejectionReason
       };
       const { data } = await apiClient.put<Application>(ENDPOINTS.applications.review(id), body);
       return data;

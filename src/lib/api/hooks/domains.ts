@@ -12,19 +12,58 @@ export type DomainsQuery = {
   pageSize?: number;
 };
 
+type DomainResponse = {
+  id: string;
+  domain: string;
+  universityName?: string | null;
+  active: boolean;
+  createdDate?: string | null;
+  lastModifiedDate?: string | null;
+  university_name?: string | null;
+  created_date?: string | null;
+  last_modified_date?: string | null;
+};
+
+function mapDomain(domain: DomainResponse): Domain {
+  return {
+    id: domain.id,
+    domain: domain.domain,
+    universityName: domain.universityName ?? domain.university_name ?? null,
+    active: domain.active,
+    createdDate: domain.createdDate ?? domain.created_date ?? null,
+    lastModifiedDate: domain.lastModifiedDate ?? domain.last_modified_date ?? null
+  };
+}
+
 export function useDomains(params?: DomainsQuery) {
   return useQuery({
     queryKey: ["domains", params],
     queryFn: async () => {
-      const { data } = await apiClient.get<PageableResponse<Domain>>(ENDPOINTS.domains.list, {
+      const { data } = await apiClient.get<PageableResponse<DomainResponse>>(ENDPOINTS.domains.list, {
         params: {
           search: params?.search,
           page: params?.page ? params.page - 1 : 0,
           size: params?.pageSize ?? 20
         }
       });
-      return mapPageable(data);
+      const mapped = mapPageable(data);
+      return {
+        ...mapped,
+        data: mapped.data.map(mapDomain)
+      };
     }
+  });
+}
+
+export function useDomain(id?: string) {
+  return useQuery({
+    queryKey: ["domains", "detail", id],
+    queryFn: async () => {
+      if (!id) return null;
+      const { data } = await apiClient.get<DomainResponse>(ENDPOINTS.domains.getById(id));
+      return mapDomain(data);
+    },
+    enabled: !!id
   });
 }
 
@@ -34,11 +73,11 @@ export function useCreateDomain() {
     mutationFn: async (payload: Partial<Domain>) => {
       const body = omitUndefined({
         domain: payload.domain,
-        university_name: payload.universityName,
+        universityName: payload.universityName,
         active: payload.active
       });
-      const { data } = await apiClient.post<Domain>(ENDPOINTS.domains.create, body);
-      return data;
+      const { data } = await apiClient.post<DomainResponse>(ENDPOINTS.domains.create, body);
+      return mapDomain(data);
     },
     onSuccess: () => client.invalidateQueries({ queryKey: ["domains"] })
   });
@@ -50,11 +89,11 @@ export function useUpdateDomain() {
     mutationFn: async ({ id, payload }: { id: string; payload: Partial<Domain> }) => {
       const body = omitUndefined({
         domain: payload.domain,
-        university_name: payload.universityName,
+        universityName: payload.universityName,
         active: payload.active
       });
-      const { data } = await apiClient.put<Domain>(ENDPOINTS.domains.update(id), body);
-      return data;
+      const { data } = await apiClient.put<DomainResponse>(ENDPOINTS.domains.update(id), body);
+      return mapDomain(data);
     },
     onSuccess: () => client.invalidateQueries({ queryKey: ["domains"] })
   });

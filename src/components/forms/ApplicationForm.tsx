@@ -22,11 +22,15 @@ export const ApplicationForm: FC<ApplicationFormProps> = ({ defaultValues, onSub
   const form = useForm<ApplicationFormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      name: "",
-      surname: "",
-      email: "",
-      studentId: "",
-      university: "",
+      firstName: "",
+      lastName: "",
+      middleName: "",
+      universityEmail: "",
+      universityName: "",
+      studentIdNumber: "",
+      studyStartDate: "",
+      studyEndDate: "",
+      attachments: undefined,
       ...defaultValues
     }
   });
@@ -50,6 +54,25 @@ export const ApplicationForm: FC<ApplicationFormProps> = ({ defaultValues, onSub
       <div className="space-y-2">
         <Label htmlFor="universityEmail">University Email</Label>
         <Input id="universityEmail" type="email" {...form.register("universityEmail")} />
+        {form.formState.errors.universityEmail ? (
+          <p className="text-xs text-destructive">{form.formState.errors.universityEmail.message}</p>
+        ) : null}
+      </div>
+      <div className="grid gap-4 md:grid-cols-2">
+        <div className="space-y-2">
+          <Label htmlFor="universityName">University Name</Label>
+          <Input id="universityName" {...form.register("universityName")} />
+          {form.formState.errors.universityName ? (
+            <p className="text-xs text-destructive">{form.formState.errors.universityName.message}</p>
+          ) : null}
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="studentIdNumber">Student ID Number</Label>
+          <Input id="studentIdNumber" {...form.register("studentIdNumber")} />
+          {form.formState.errors.studentIdNumber ? (
+            <p className="text-xs text-destructive">{form.formState.errors.studentIdNumber.message}</p>
+          ) : null}
+        </div>
       </div>
       <div className="grid gap-4 md:grid-cols-2">
         <div className="space-y-2">
@@ -62,9 +85,13 @@ export const ApplicationForm: FC<ApplicationFormProps> = ({ defaultValues, onSub
         </div>
       </div>
       <div className="space-y-2">
-        <Label htmlFor="attachments">Attachments (optional)</Label>
+        <Label htmlFor="attachments">Attachments</Label>
         <Input id="attachments" type="file" multiple {...form.register("attachments")} />
-        <p className="text-xs text-muted-foreground">Upload student ID or enrollment proof if required by API.</p>
+        {form.formState.errors.attachments ? (
+          <p className="text-xs text-destructive">{form.formState.errors.attachments.message as string}</p>
+        ) : (
+          <p className="text-xs text-muted-foreground">Upload student ID or enrollment proof.</p>
+        )}
       </div>
       <Button type="submit" disabled={isSubmitting}>
         {isSubmitting ? "Submitting..." : "Submit Application"}
